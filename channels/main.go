@@ -1,0 +1,70 @@
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func sendEmail(message string) {
+	go func() {
+		time.Sleep(time.Millisecond * 250)
+		fmt.Printf("Email received: '%s'\n", message)
+	}()
+	fmt.Printf("Email sent: '%s'\n", message)
+}
+
+
+func test(message string) {
+	sendEmail(message)
+	time.Sleep(time.Millisecond * 500)
+	fmt.Println("========================")
+}
+
+
+//channels - channels are typed, thread safe queue that allows different goroutines to communicate with each other
+
+//to make a channel
+// ch := make(chan int)
+
+//sending data to the channel
+//ch <- 69
+
+// receiving data form the channel
+// v:= <- ch
+
+type email struct {
+	body string
+	date time.Time
+}
+
+func checkEmailAge(emails [3]email) [3]bool {
+	isOldChan := make(chan bool)
+
+	go sendIsOld(isOldChan, emails)
+
+	isOld := [3]bool{}
+	isOld[0] = <-isOldChan
+	isOld[1] = <-isOldChan
+	isOld[2] = <-isOldChan
+	return isOld
+}
+
+// don't touch below this line
+
+func sendIsOld(isOldChan chan<- bool, emails [3]email) {
+	for _, e := range emails {
+		if e.date.Before(time.Date(2020, 0, 0, 0, 0, 0, 0, time.UTC)) {
+			isOldChan <- true
+			continue
+		}
+		isOldChan <- false
+	}
+}
+
+func main() {
+	test("Hello there Kaladin!")
+	test("Hi there Shallan!")
+	test("Hey there Dalinar!")
+
+
+}
